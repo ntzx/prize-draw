@@ -8,7 +8,11 @@ async function init() {
         wModule,
         {
             env: {
-                random: Math.random
+                rand_seed: (ptr, len) => {
+                    let buf = new Uint8Array(len);
+                    window.crypto.getRandomValues(buf);
+                    writeMemory(ptr, buf, len);
+                }
             }
         }
     );

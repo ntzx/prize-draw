@@ -23,3 +23,19 @@
 
     box-shadow: 0px 0px 5px rgba(63, 63, 63, 0.8)
 }
+
+#initial {
+    text-align: center;
+    font-size: 24px;
+    color: #333333;
+    line-height: 32px;
+    box-sizing: border-box;
+    width: 100%;
+    padding-top: 150px;
+}
+
+.rng-seed-label {
+    color: #909090;
+    font-size: 24px;
+    font-family: Arial, Helvetica, sans-serif;
+}

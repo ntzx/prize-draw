@@ -159,12 +159,22 @@ async function updateView() {
     }, 100);
 }
 
+function printSeed() {
+    let rseed_ptr = window.bridge.instance.exports.get_printable_rseed();
+    let rseed = window.bridge.readString(rseed_ptr);
+    window.bridge.deallocRemoteString(rseed_ptr);
+
+    document.getElementById("rseed").innerText = rseed.trim();
+}
+
 async function run() {
     await window.bridge.init();
 
-    people = JSON.parse(await (await fetch("people.json")).text());
+    people = JSON.parse(await (await fetch("people.stage1.json")).text());
     await preloadAll();
     console.log("preloaded");
+
+    printSeed();
 
     container = document.getElementById("container");
 
