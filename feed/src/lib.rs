@@ -2,16 +2,33 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+extern crate rand;
+#[macro_use]
+extern crate lazy_static;
 
 pub mod glue;
 
+use std::sync::Mutex;
 use std::collections::VecDeque;
 use std::os::raw::c_char;
 use std::rc::Rc;
+use rand::ChaChaRng;
+use rand::SeedableRng;
+use rand::Rng;
 
 extern "C" {
     #[link_name = "random"]
     fn __random() -> f64;
+}
+
+lazy_static! {
+    static ref RNG: Mutex<ChaChaRng> = Mutex::new(ChaChaRng::from_seed({
+        let mut bytes: [u8; 32] = [0u8; 32];
+        for i in 0..32 {
+            bytes[i] = (random() * 256f64) as u8;
+        }
+        bytes
+    }));
 }
 
 fn random() -> f64 {
@@ -46,9 +63,9 @@ pub struct Tick<'a> {
 }
 
 impl FeedSource {
-    pub fn from_config(config: Config) -> FeedSource {
+    pub fn from_config(mut config: Config) -> FeedSource {
+        RNG.lock().unwrap().shuffle(&mut config.people);
         let mut fs = FeedSource {
-            // TODO: shuffle
             people: config.people.into_iter().map(|x| Rc::new(x)).collect(),
             ready_queue: VecDeque::new(),
             batch_size: config.batch_size
