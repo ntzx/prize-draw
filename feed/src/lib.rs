@@ -17,22 +17,18 @@ use rand::SeedableRng;
 use rand::Rng;
 
 extern "C" {
-    #[link_name = "random"]
-    fn __random() -> f64;
+    fn rand_seed(ptr: *mut u8, len: usize);
 }
 
 lazy_static! {
-    static ref RNG: Mutex<ChaChaRng> = Mutex::new(ChaChaRng::from_seed({
+    static ref RSEED: [u8; 32] = {
         let mut bytes: [u8; 32] = [0u8; 32];
-        for i in 0..32 {
-            bytes[i] = (random() * 256f64) as u8;
+        unsafe {
+            rand_seed(&mut bytes[0], 32);
         }
         bytes
-    }));
-}
-
-fn random() -> f64 {
-    unsafe { __random() }
+    };
+    static ref RNG: Mutex<ChaChaRng> = Mutex::new(ChaChaRng::from_seed(RSEED.clone()));
 }
 
 pub struct FeedSource {
@@ -79,7 +75,7 @@ impl FeedSource {
             let current = self.people.pop_front().unwrap();
             self.people.push_back(current.clone());
 
-            if random() < 0.3 {
+            if RNG.lock().unwrap().gen_bool(0.3) {
                 return current;
             }
         }
@@ -96,6 +92,27 @@ impl FeedSource {
 
         newly_added
     }
+}
+
+#[no_mangle]
+pub extern "C" fn get_printable_rseed() -> *mut c_char {
+    use std::ffi::CString;
+
+    let mut s = String::new();
+
+    {
+        for i in 0..8 {
+            let slice = &RSEED[i * 4 .. i * 4 + 4];
+            s += &format!("{:02x}{:02x}{:02x}{:02x}", slice[0], slice[1], slice[2], slice[3]);
+            if i == 3 {
+                s += "\n";
+            } else {
+                s += " ";
+            }
+        }
+    }
+
+    CString::new(s).unwrap().into_raw()
 }
 
 #[no_mangle]
