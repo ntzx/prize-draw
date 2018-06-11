@@ -1,5 +1,5 @@
 {
-    "name": "ntzx_grad_act",
+    "name": "prize-draw",
     "version": "1.0.0",
     "description": "",
     "main": "main.js",
@@ -12,4 +12,3 @@
       "electron": "^2.0.2"
     }
   }
-  
