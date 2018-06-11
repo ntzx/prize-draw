@@ -170,7 +170,7 @@ function printSeed() {
 async function run() {
     await window.bridge.init();
 
-    people = JSON.parse(await (await fetch("people.stage1.json")).text());
+    people = JSON.parse(await (await fetch("people.stage2.json")).text());
     await preloadAll();
     console.log("preloaded");
 
